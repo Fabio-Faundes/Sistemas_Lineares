@@ -58,3 +58,38 @@ void remova (Lista* lis, void* rInfo) {
     free(aux_prox);
 
 }
+
+int main()
+{
+	FILE* arq;
+
+	char c;
+
+	char* linha = (char*)malloc(sizeof(char) * 1000);
+
+    int linhas;
+	string nome;
+    printf("Digite o nome do arquivo: ");
+    scanf(%s, nome);
+
+
+	arq =fopen(nome , "r")
+
+	if (!arq)
+		return 1;
+
+    fscanf(arq, "%d", &linhas);
+    int i;
+    for(i=0; i<=linhas;i++){
+        fgets(linha, 1000, arq);
+        for(int p = 0; p<=sizeof(linha); )
+    }
+
+
+
+
+	fclose(arq);
+
+    return  0;
+}
+
