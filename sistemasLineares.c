@@ -107,6 +107,29 @@ void printar (Lista* lis) {
     printf("%s", ret);
 }
 
+void* getElemento (Lista* lis, int pos) {
+    if(lis -> inicio == NULL)
+        return;
+
+    void* ret;
+    int count = 0;
+    No* aux = lis -> inicio;
+    while(aux != NULL){
+        if(count == pos)
+            break;
+        aux = aux -> prox;
+    }
+
+    if(count == pos){
+        ret = aux -> info;
+        return ret;
+    }
+
+    ret = NULL;
+    return ret;
+
+}
+
 
 void main (){
 
