@@ -301,13 +301,23 @@ void printarResultado (Sistema* sis) {
 
 }
 
+
+
 void main (){
     int i, j;
     float** aux;
+    char* nomeArq = (char*)malloc(sizeof(1000))
 
+    printf("Nome arquivo: ");
+    scanf("%s", &nomeArq);
+/*
     aux = (float**)malloc(4 * sizeof(float*));
     for(i = 0; i < 4; i++)
         *(aux + i) = (float*)malloc(4 * sizeof(float));
+
+
+
+
 
     aux[0][0] = 1;
     aux[0][1] = 2;
@@ -334,7 +344,7 @@ void main (){
 
     float a;
     a = det(aux, 4);
-    printf("%2.f", a);
+    printf("%2.f", a);*/
 }
 
 
