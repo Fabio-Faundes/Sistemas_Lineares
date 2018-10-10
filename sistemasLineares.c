@@ -57,7 +57,27 @@ void remova (Lista* lis, void* rInfo) {
     aux -> prox = aux_prox -> prox;
     free(aux_prox);
 
+}*/
+
+char* lerArquivo(FILE* arq)
+{
+    int linhas;
+    fscanf(arq, "%d", &linhas);
+    printf("%d", linhas);
+
+    char c[2];
+    char concat[1000];
+
+    c[1] = '\0';
+    while (!feof(arq)) {
+        c[0] = fgetc(arq);
+        strcat(concat, &c);
+        //if (c >= 43 && c <= 57)
+    }
+
+    printf("%s", concat);
 }
+
 
 int main()
 {
@@ -65,28 +85,17 @@ int main()
 
 	char c;
 
-	char* linha = (char*)malloc(sizeof(char) * 1000);
+	char* nome = (char*)malloc(sizeof(int) * 1000);
 
-    int linhas;
-	string nome;
+
     printf("Digite o nome do arquivo: ");
-    scanf(%s, nome);
+    scanf("%s", nome);
 
-
-	arq =fopen(nome , "r")
-
+    arq = fopen(nome, "r");
 	if (!arq)
 		return 1;
 
-    fscanf(arq, "%d", &linhas);
-    int i;
-    for(i=0; i<=linhas;i++){
-        fgets(linha, 1000, arq);
-        for(int p = 0; p<=sizeof(linha); )
-    }
-
-
-
+    lerArquivo(arq);
 
 	fclose(arq);
 
