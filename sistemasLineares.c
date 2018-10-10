@@ -17,6 +17,14 @@ typedef //A lista nesse caso será desordenada devido a demanda do projeto;
         int (*equals) (void*, void*);
     }Lista;
 
+typedef
+    struct Sistema {
+        int qtdIcog;
+        Lista* lisIcog;
+        float** matrizCoeficientes;
+        float* linhaResultados;
+    }Sistema;
+
 char* toStringStr (char* str) {
     return str;
 }
@@ -130,9 +138,203 @@ void* getElemento (Lista* lis, int pos) {
 
 }
 
+//i é a linha e j é a coluna
+float** formarComplementar (float** matriz, int i, int j, int ordem) {
+int a, b, c = 0, d = 0;
+
+    //alocando memória para a matriz que será utilizada
+    float** mComplementar = (float**)malloc((ordem-1)*sizeof(float*));
+    for(a = 0; a < ordem-1; a++)
+        *(mComplementar+a) = (float*)malloc((ordem -1)*sizeof(float));
+
+    //aqui teremos que percorrer a matriz original inteiramente
+    // a é a linha da matriz original e b é a coluna;
+    //c é a linha da matriz complemento e d é a coluna;
+    for(a = 0; a < ordem; a++){
+        for(b = 0; b < ordem; b++){
+            //Significa que não é uma das linhas a serem descartadas
+            if(a != i -1 && b != j -1){
+                *(*(mComplementar + c)+ d) = *(*(matriz + a) + b);
+
+                //temos que resetar
+                if(c == ordem -2){
+                    c = 0;
+                    d++;
+                    break;
+                }
+                else{
+                    c++;
+                }
+
+            }
+            else{}//Não faz nada, o for já incrementará a posição da matriz original;
+        }
+        //quer dizer que acabou;
+        if(d == ordem -1)
+            break;
+    }
+
+    return mComplementar;
+}
+
+//Método para calcular determinante
+float det (float** matriz, int ordem){
+    float* linha;
+    float** mAux;
+    int i;
+    int j=0;
+    float determinante = 0;
+    int aux;
+    //Eh uma matriz de ordem 1 portanto tem somente um elemento, o primeiro
+    //A determinante eh igual ao elemento;
+    if(ordem == 1){
+        return *(*matriz);
+    }
+
+
+    //usaremos a primeira linha da matriz para calcular
+    linha = (float*)malloc(ordem * sizeof(float));
+    for(i = 0; i < ordem; i++){
+        *(linha + i) = *(*matriz + i);
+    }
+    i = 0;
+
+
+    for(j = 0; j < ordem; j++){
+        if((i + j) % 2 == 0)
+            aux = 1;
+        else
+            aux = -1;
+        mAux = formarComplementar(matriz,i+1 , j+1,ordem);
+        determinante += linha[j] * aux * det(mAux, ordem-1);
+        free(mAux);//Descarta depois de usar;
+    }
+
+    free(linha);
+    return determinante;
+
+}
+
+//Forma a matriz da icógnita no Teorema de Cramer;
+float** matrizIcognita (float** coeficientes, float* resultados, int pos, int qtd){
+    int i, j, a = 0;
+
+    float** ret = (float**)malloc(qtd * sizeof(float*));
+    for(i = 0; i < qtd; i++)
+        ret[i] = (float*)malloc(qtd * sizeof(float));
+
+    for(i = 0; i < qtd; i++){
+        for(j = 0; j < qtd; j++){
+            if(j == pos -1){ //Se estiver na posição correspondente, colocamos o valor dos resultados;
+                ret[i][j] = resultados[a];
+                a++;
+            }
+            else//Se não, copia da matriz dos coeficientes;
+                ret[i][j] = coeficientes[i][j];
+        }
+    }
+
+    return ret;
+}
+
+//Recebe um ponteiro de Sistema pelo parâmetro e devolve um vetor com os valores das icógnitas em ordem;
+float* resolverSistema (Sistema* sis){
+    int i, j;
+    float determinateC;
+    float determinateIcog;
+    float** aux;
+    float* ret = (float*)malloc(sis -> qtdIcog * sizeof(float));;
+
+    determinanteIcog = (float*)malloc(sis -> qtdIcog * sizeof(float));
+
+    determinateC = det(sis -> matrizCoeficientes, sis -> qtdIcog);
+    for(i = 0; i < sis -> qtdIcog; i++){
+        aux = matrizIcognita(sis -> matrizCoeficientes, sis -> linhaResultados, i+1, sis -> qtdIcog);
+        determinateIcog = det(aux, sis->qtdIcog);
+        free(aux);//Lembrar de descartar o que não for mais usada;
+        ret[i] = determinateC/determinateIcog;
+    }
+
+    return ret;
+}
+
+void printarSistema (Sistema* sis){
+    int i, j;
+    Lista* lis = sis -> lisIcog;
+
+    printf(\n"{"\n);
+    for(i = 0; i < sis -> qtdIcog;){//Printa a linha;
+        printf("\t");//Devemos dar um espço no começo da linha;
+        for(j = 0; j < sis -> icog; j++){//Printa as colunas;
+            printf("%2.f", sis -> coeficientes[i][j]);
+
+            char* a = (char*)getElemento(lis, j);
+            printf("%s", a);
+
+            if( j + 1 < sis -> icog)//Significa que tem mais icognitas;
+                if(sis -> coeficientes[i][j+1] < 0)
+                    printf(" ");//Deixa espaço em branco pois o coeficiente já terá um "-";
+                else
+                    printf(" +");
+        }
+        printf(" = ");
+        printf("%2.f\n", sis -> linhaResultados[i]);
+    }
+
+}
+
+void printarResultado (Sistema* sis) {
+    int i;
+    Lista* lis = sis -> lisIcog;
+    float* resolucao = resolverSistema(sis);
+
+    printf("\nSolução: ");
+    for(i = 0; i < sis -> qtdIcog; i++){
+        char * a = (char*)getElemento(lis, i);
+        printf("%s = %2.f", a, resolucao[i]);
+
+        if(i + 1 < sis -> qtdIcog)
+            printf(", ");
+    }
+
+    printf(".");
+
+}
 
 void main (){
+    int i, j;
+    float** aux;
 
+    aux = (float**)malloc(4 * sizeof(float*));
+    for(i = 0; i < 4; i++)
+        *(aux + i) = (float*)malloc(4 * sizeof(float));
+
+    aux[0][0] = 1;
+    aux[0][1] = 2;
+    aux[0][2] = 3;
+    aux[0][3] = 5;
+    aux[1][0] = 3;
+    aux[1][1] = 4;
+    aux[1][2] = 0;
+    aux[1][3] = 4;
+    aux[2][0] = 4;
+    aux[2][1] = 5;
+    aux[2][2] = 6;
+    aux[2][3] = 7;
+    aux[3][0] = 5;
+    aux[3][1] = 6;
+    aux[3][2] = 7;
+    aux[3][3] = 8;
+
+    for(i = 0; i < 4; i++){
+        for(j = 0; j < 4; j++)
+            printf("%2.f ", aux[i][j]);
+        printf("\n");
+    }
+
+    float a;
+    a = det(aux, 4);
+    printf("%2.f", a);
 }
 
 
