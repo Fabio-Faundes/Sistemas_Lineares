@@ -301,60 +301,44 @@ void printarResultado (Sistema* sis) {
 
 }
 
+char* lerArquivo(FILE* arq)
+{
+    int linhas;
+    fscanf(arq, "%d", &linhas);
+    printf("%d", linhas);
 
+    char c[2];
+    char concat[1000];
 
-void main (){
-    int i, j;
-    float** aux;
-    char* nomeArq = (char*)malloc(sizeof(1000))
-
-    printf("Nome arquivo: ");
-    scanf("%s", &nomeArq);
-/*
-    aux = (float**)malloc(4 * sizeof(float*));
-    for(i = 0; i < 4; i++)
-        *(aux + i) = (float*)malloc(4 * sizeof(float));
-
-
-
-
-
-    aux[0][0] = 1;
-    aux[0][1] = 2;
-    aux[0][2] = 3;
-    aux[0][3] = 5;
-    aux[1][0] = 3;
-    aux[1][1] = 4;
-    aux[1][2] = 0;
-    aux[1][3] = 4;
-    aux[2][0] = 4;
-    aux[2][1] = 5;
-    aux[2][2] = 6;
-    aux[2][3] = 7;
-    aux[3][0] = 5;
-    aux[3][1] = 6;
-    aux[3][2] = 7;
-    aux[3][3] = 8;
-
-    for(i = 0; i < 4; i++){
-        for(j = 0; j < 4; j++)
-            printf("%2.f ", aux[i][j]);
-        printf("\n");
+    c[1] = '\0';
+    while (!feof(arq)) {
+        c[0] = fgetc(arq);
+        strcat(concat, &c);
+        //if (c >= 43 && c <= 57)
     }
 
-    float a;
-    a = det(aux, 4);
-    printf("%2.f", a);*/
+    printf("%s", concat);
 }
 
+int main()
+{
+	FILE* arq;
+
+	char c;
+
+	char* nome = (char*)malloc(sizeof(int) * 1000);
 
 
+    printf("Digite o nome do arquivo: ");
+    scanf("%s", nome);
 
+    arq = fopen(nome, "r");
+	if (!arq)
+		return 1;
 
+    lerArquivo(arq);
 
+	fclose(arq);
 
-
-
-
-
-
+    return  0;
+}
