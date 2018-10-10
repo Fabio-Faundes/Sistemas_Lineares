@@ -237,6 +237,7 @@ float** matrizIcognita (float** coeficientes, float* resultados, int pos, int qt
     return ret;
 }
 
+/*
 //Recebe um ponteiro de Sistema pelo parâmetro e devolve um vetor com os valores das icógnitas em ordem;
 float* resolverSistema (Sistema* sis){
     int i, j;
@@ -302,19 +303,26 @@ void printarResultado (Sistema* sis) {
 
 }
 
+*/
+
 char* lerArquivo(FILE* arq)
 {
     int linhas;
     fscanf(arq, "%d", &linhas);
     printf("%d", linhas);
 
-    char c[2];
-    char concat[1000];
+    fseek(arq, 0, SEEK_END);
+    long int buffer_size = ftell(arq);
+    fseek(arq, 1, SEEK_SET);
 
-    c[1] = '\0';
+    char* concat = (char*)malloc(buffer_size);
+
+    int i = 0;
     while (!feof(arq)) {
-        c[0] = fgetc(arq);
-        strcat(concat, &c);
+        *(concat+i) = fgetc(arq);
+        if()
+
+        i++;
         //if (c >= 43 && c <= 57)
     }
 
@@ -327,7 +335,7 @@ int main()
 
 	char c;
 
-	char* nome = (char*)malloc(sizeof(int) * 1000);
+	char* nome = (char*)malloc(sizeof(char) * 1000);
 
 
     printf("Digite o nome do arquivo: ");
