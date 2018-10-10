@@ -244,6 +244,7 @@ float* resolverSistema (Sistema* sis){
     float determinateIcog;
     float** aux;
     float* ret = (float*)malloc(sis -> qtdIcog * sizeof(float));;
+    float* ret = (float*)malloc(sis -> qtdIcog * sizeof(float));
 
     determinanteIcog = (float*)malloc(sis -> qtdIcog * sizeof(float));
 
