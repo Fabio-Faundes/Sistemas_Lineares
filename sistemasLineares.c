@@ -304,10 +304,10 @@ void printarResultado (Sistema* sis) {
 
 char* lerArquivo(FILE* arq)
 {
+
     fseek(arq, 0, SEEK_END);
     long int buffer_size = ftell(arq);
     fseek(arq, 0, SEEK_SET);
-
     char* concat = (char*)malloc(buffer_size);
     int i = 0;
     while (!feof(arq)) {
@@ -321,6 +321,7 @@ char* lerArquivo(FILE* arq)
 void separarEquacoes(FILE* arq, Sistema* sis)
 {
     char* texto = lerArquivo(arq);
+
     Lista* lis = sis -> lisEqua;
     char s[256];
     char* equacao;
@@ -333,26 +334,30 @@ void separarEquacoes(FILE* arq, Sistema* sis)
     }
 }
 
+void extrairCoeficientes(Sistema* sis, char* nome)
+{
+    FILE* arq;
+    arq = fopen(nome, "r");
+    separarEquacoes(arq, sis);
+    fclose(arq);
+}
+
 int main()
 {
 	FILE* arq;
     Sistema* sis;
-	char c;
-    char* texto;
-	char* nome = (char*)malloc(sizeof(char) * 1000);
+    char* nome = (char*)malloc(sizeof(char) * 1000);
 
 
     printf("Digite o nome do arquivo: ");
-    scanf("%s", nome);
+    scanf("%s", &nome);
 
     arq = fopen(nome, "r");
-	if (!arq)
-		return 1;
-
 
     separarEquacoes(arq, sis);
+    //extrairCoeficientes(sis, nome);
 
-	fclose(arq);
+    fclose(arq);
 
     return  0;
 }
