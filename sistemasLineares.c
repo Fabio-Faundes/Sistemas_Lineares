@@ -21,6 +21,7 @@ typedef
     struct Sistema {
         int qtdIcog;
         Lista* lisIcog;
+        Lista* lisEqua;
         float** matrizCoeficientes;
         float* linhaResultados;
     }Sistema;
@@ -303,34 +304,41 @@ void printarResultado (Sistema* sis) {
 
 char* lerArquivo(FILE* arq)
 {
-    int linhas;
-    fscanf(arq, "%d", &linhas);
-    printf("%d", linhas);
-
     fseek(arq, 0, SEEK_END);
     long int buffer_size = ftell(arq);
-    fseek(arq, 1, SEEK_SET);
+    fseek(arq, 0, SEEK_SET);
 
     char* concat = (char*)malloc(buffer_size);
-
     int i = 0;
     while (!feof(arq)) {
         *(concat+i) = fgetc(arq);
-        if()
-
         i++;
-        //if (c >= 43 && c <= 57)
     }
+    *(concat+i) = '\0';
+    return concat;
+}
 
-    printf("%s", concat);
+void separarEquacoes(FILE* arq, Sistema* sis)
+{
+    char* texto = lerArquivo(arq);
+    Lista* lis = sis -> lisEqua;
+    char s[256];
+    char* equacao;
+    strcpy(s, texto);
+    equacao = strtok(s, "\n");
+    while (equacao)
+    {
+        insira(lis, (void*)equacao);
+        equacao = strtok(NULL, "\n");
+    }
 }
 
 int main()
 {
 	FILE* arq;
-
+    Sistema* sis;
 	char c;
-
+    char* texto;
 	char* nome = (char*)malloc(sizeof(char) * 1000);
 
 
@@ -341,9 +349,11 @@ int main()
 	if (!arq)
 		return 1;
 
-    lerArquivo(arq);
+
+    separarEquacoes(arq, sis);
 
 	fclose(arq);
 
     return  0;
 }
+
