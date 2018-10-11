@@ -237,24 +237,20 @@ float** matrizIcognita (float** coeficientes, float* resultados, int pos, int qt
     return ret;
 }
 
-/*
 //Recebe um ponteiro de Sistema pelo parâmetro e devolve um vetor com os valores das icógnitas em ordem;
 float* resolverSistema (Sistema* sis){
     int i, j;
-    float determinateC;
-    float determinateIcog;
+    float determinanteC;
+    float determinanteIcog;
     float** aux;
-    float* ret = (float*)malloc(sis -> qtdIcog * sizeof(float));;
     float* ret = (float*)malloc(sis -> qtdIcog * sizeof(float));
 
-    determinanteIcog = (float*)malloc(sis -> qtdIcog * sizeof(float));
-
-    determinateC = det(sis -> matrizCoeficientes, sis -> qtdIcog);
+    determinanteC = det(sis -> matrizCoeficientes, sis -> qtdIcog);
     for(i = 0; i < sis -> qtdIcog; i++){
         aux = matrizIcognita(sis -> matrizCoeficientes, sis -> linhaResultados, i+1, sis -> qtdIcog);
-        determinateIcog = det(aux, sis->qtdIcog);
+        determinanteIcog = det(aux, sis->qtdIcog);
         free(aux);//Lembrar de descartar o que não for mais usada;
-        ret[i] = determinateC/determinateIcog;
+        ret[i] = determinanteC/determinanteIcog;
     }
 
     return ret;
@@ -264,17 +260,17 @@ void printarSistema (Sistema* sis){
     int i, j;
     Lista* lis = sis -> lisIcog;
 
-    printf(\n"{"\n);
+    printf("\n{\n");
     for(i = 0; i < sis -> qtdIcog;){//Printa a linha;
         printf("\t");//Devemos dar um espço no começo da linha;
-        for(j = 0; j < sis -> icog; j++){//Printa as colunas;
-            printf("%2.f", sis -> coeficientes[i][j]);
+        for(j = 0; j < sis -> qtdIcog; j++){//Printa as colunas;
+            printf("%2.f", sis -> matrizCoeficientes[i][j]);
 
             char* a = (char*)getElemento(lis, j);
             printf("%s", a);
 
-            if( j + 1 < sis -> icog)//Significa que tem mais icognitas;
-                if(sis -> coeficientes[i][j+1] < 0)
+            if( j + 1 < sis -> qtdIcog)//Significa que tem mais icognitas;
+                if(sis -> matrizCoeficientes[i][j+1] < 0)
                     printf(" ");//Deixa espaço em branco pois o coeficiente já terá um "-";
                 else
                     printf(" +");
@@ -303,7 +299,7 @@ void printarResultado (Sistema* sis) {
 
 }
 
-*/
+
 
 char* lerArquivo(FILE* arq)
 {
