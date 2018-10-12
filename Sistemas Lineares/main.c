@@ -13,6 +13,7 @@ typedef //A lista nesse caso será desordenada devido a demanda do projeto;
     struct Lista {
         No* inicio;
         No* ult;
+        int qtd;
         char* (*toString) (void*);
         int (*equals) (void*, void*);
     }Lista;
@@ -62,6 +63,7 @@ void insira (Lista* lis, void* nInfo) {
         lis -> inicio -> prox = NULL;
         lis -> inicio -> ant = NULL;
         lis -> ult = lis -> inicio;
+        lis -> qtd++;
         return;
     }
 
@@ -71,6 +73,7 @@ void insira (Lista* lis, void* nInfo) {
     aux -> ant = lis -> ult;
     lis -> ult -> prox = aux;
     lis -> ult = lis -> ult -> prox;
+    lis -> qtd++;
 
 }
 
@@ -82,6 +85,7 @@ void remova (Lista* lis, void* rInfo) {
 
     if(lis -> equals(aux -> info, rInfo)){
         lis -> inicio = NULL;
+        lis -> qtd--;
         return;
     }
 
@@ -93,6 +97,7 @@ void remova (Lista* lis, void* rInfo) {
             break;
         }
         aux = aux -> prox;
+        lis -> qtd--;
     }
 
     //Se chegar aqui, não há nada a se remover;
@@ -304,7 +309,6 @@ void printarResultado (Sistema* sis) {
 
 char* lerArquivo(FILE* arq)
 {
-
     fseek(arq, 0, SEEK_END);
     long int buffer_size = ftell(arq);
     fseek(arq, 0, SEEK_SET);
@@ -318,11 +322,16 @@ char* lerArquivo(FILE* arq)
     return concat;
 }
 
-void separarEquacoes(FILE* arq, Sistema* sis)
+Lista* separarEquacoes(char* nome, Sistema* sis)
 {
+    FILE* arq = fopen(nome, "r");
     char* texto = lerArquivo(arq);
-
     Lista* lis = (Lista*)malloc(sizeof(Lista));
+    lis->inicio = NULL;
+    lis->ult = NULL;
+    lis->qtd = 0;
+    lis -> equals = (int(*)(void*,void*))&equalsStr;
+    lis->toString = (char*(*)(void*))&toStringStr;
     char* s = (char*)malloc(sizeof(char)*1024);
     char* equacao = (char*)malloc(sizeof(char)*1024);
     strcpy(s, texto);
@@ -332,28 +341,64 @@ void separarEquacoes(FILE* arq, Sistema* sis)
         insira(lis, (void*)equacao);
         equacao = strtok(NULL, "\n");
     }
-    printar(lis);
-    sis->lisEqua = &lis;
+    fclose(arq);
+    return lis;
 }
 
 void extrairCoeficientes(Sistema* sis, char* nome)
 {
-    FILE* arq;
-    arq = fopen(nome, "r");
-    separarEquacoes(arq, sis);
-    fclose(arq);
-}
+    sis->lisEqua = separarEquacoes(nome, sis);
+    char c;
+    char* equacao = (char*)malloc(sizeof(char)*1024);
+    char* coeficiente = (char*)malloc(sizeof(char)*100);
+    char* variavei = (char*)malloc(sizeof(char)*100);
+    char* resultado = (char*)malloc(sizeof(char)*100);
+    int i;
+    int n;
+    int cont;
 
+    for(i=0; i<=sis->lisEqua->qtd; i++)
+    {
+        equacao = (char*)getElemento(sis->lisEqua,i);
+        for(n=0;i<=sizeof(equacao);i++)
+        {
+            c = *(equacao+i);
+            switch(c)
+            {
+            case(c>=43 && c<=57):
+            *(concat+i)
+                break;
+            case(c>=97 && c<=122)
+
+                break;
+            case(c==61)
+
+            break;
+
+            default:
+            }
+
+        }
+
+    }
+
+
+}
 int main()
 {
 	FILE* arq;
-    Sistema* sis;
+    Sistema* sis = (Sistema*)malloc(sizeof(Sistema));
+    sis->qtdIcog = 0;
+    sis->lisIcog = NULL;
+    sis->lisEqua = NULL;
+    sis->linhaResultados = 0;
 
-    char* nome = (char*)malloc(sizeof(char) * 1000);
+   char nome [1000];
 
 
     printf("Digite o nome do arquivo: ");
-    scanf("%s", &nome);
+    scanf("%s", nome);
+    nome[999] = '\0';
     extrairCoeficientes(sis, nome);
 
 
