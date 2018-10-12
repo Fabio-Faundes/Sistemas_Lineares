@@ -348,13 +348,7 @@ int main()
 {
 	FILE* arq;
     Sistema* sis;
-    sis->qtdIcog = (int) malloc(sizeof(int));
-    sis->qtdIcog =0;
-    printf("a");
-    sis->lisIcog = NULL;
-    sis->lisEqua = NULL;
-    sis-> matrizCoeficientes = NULL/*(float**)malloc(sizeof(float**))*/;
-    sis->linhaResultados = 0;
+
     char* nome = (char*)malloc(sizeof(char) * 1000);
 
 
@@ -365,4 +359,5 @@ int main()
 
     return  0;
 }
+
 
