@@ -297,7 +297,7 @@ void printarSistema (Sistema* sis){
     Lista* lis = sis -> lisIcog;
 
     printf("\n{\n");
-    for(i = 0; i < sis -> qtdIcog;){//Printa a linha;
+    for(i = 0; i < sis -> qtdIcog;){//Printa a linhaux = aux -> prox;a;
         printf("\t");//Devemos dar um espço no começo da linha;
         for(j = 0; j < sis -> qtdIcog; j++){//Printa as colunas;
             printf("%2.f", sis -> matrizCoeficientes[i][j]);
@@ -395,18 +395,25 @@ void extrairCoeficientes(Sistema* sis, char* nome)
     lis->qtd = 0;
     lis -> equals = (int(*)(void*,void*))&equalsStr;
     lis->toString = (char*(*)(void*))&toStringStr;
-
-    char c;//Caracter lido da equação
-    int ehCo;//variável para controlar se um numero é ou nao coeficiente
-    char* equacao = (char*)malloc(sizeof(char)*1024);
-    char* coeficiente = (char*)malloc(sizeof(char)*100);
-    char* variavel = (char*)malloc(sizeof(char)*100);
-    char* resultado = (char*)malloc(sizeof(char)*100);
     int i;
     int n;
     int cont = 0;//Contador reponsável por inserir os caracteres nas variáveis
     int j;
     int len;
+    char c;//Caracter lido da equação
+    int ehCo;//variável para controlar se um numero é ou nao coeficiente
+    char* equacao = (char*)malloc(sizeof(char)*1024);
+
+    char** coeficiente = (char*)malloc(sizeof(char*)*sis->qtdIcog);
+    for(i=0;i<=sis->qtdIcog;i++) //C MERDA LIXO //
+        coeficiente[i] = (char*)malloc(sizeof(char)*100);
+    char** variavel = (char*)malloc(sizeof(char*)*sis->qtdIcog);
+    for(i=0;i<=sis->qtdIcog;i++)
+        variavel[i] = (char*)malloc(sizeof(char)*100);
+    char** resultado = (char*)malloc(sizeof(char*)*sis->qtdIcog);
+    for(i=0;i<=sis->qtdIcog;i++)
+        resultado[i] = (char*)malloc(sizeof(char)*100);
+
 
     sis->matrizCoeficientes = (float**)malloc(sis->lisEqua->qtd * sizeof(float*));
     for(i = 0; i < sis->lisEqua->qtd; i++)
@@ -437,9 +444,7 @@ void extrairCoeficientes(Sistema* sis, char* nome)
                 insira(lis, variavel);
                 free(variavel);
                 variavel = (char*)malloc(sizeof(char) * 100);
-
                 printar(lis);
-                variavel = limparString(variavel, cont);
                 cont = 0;
             }
         }
@@ -520,7 +525,7 @@ void extrairCoeficientes(Sistema* sis, char* nome)
 
 int main()
 {
-    /*
+
 	FILE* arq;
     Sistema* sis = (Sistema*)malloc(sizeof(Sistema));
     sis->qtdIcog = 0;
@@ -543,8 +548,8 @@ int main()
 
     nome[5] = '\0';
     extrairCoeficientes(sis, nome);
-    */
 
+/*
     Lista a;
     a.inicio = NULL;
     a.ult = NULL;
@@ -556,7 +561,7 @@ int main()
     strcpy(aux, "Pei");
     insira(&a, aux);
 
-    printar(&a);
+    printar(&a);*/
 
     return  0;
 }
