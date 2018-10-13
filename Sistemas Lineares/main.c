@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define VAZIO ""
+
 typedef
     struct No {
         void* info;
@@ -36,6 +38,13 @@ int equalsStr (char* a, char* b) {
         return 1;
 
     return 0;
+}
+
+void freeMatriz (void** mat, int tamanho) {
+    int i;
+    for(i = 0; i < tamanho; i++)
+        free(*(mat + i));
+    free(mat);
 }
 
 //Checa se já existe algum nó na lista com determinada informacao;
@@ -123,7 +132,7 @@ void printar (Lista* lis) {
 
 void* getElemento (Lista* lis, int pos) {
     if(lis -> inicio == NULL)
-        return;
+        return NULL;
 
     void* ret;
     int count = 0;
@@ -154,14 +163,13 @@ int getPos(Lista* lis, void* nInfo)
     No* aux = lis->inicio;
     while(aux != NULL)
     {
-        if(aux->info == nInfo)
+        if(lis -> equals(aux -> info, nInfo))
             break;
         aux = aux -> prox;
-        count++;
+        cont++;
     }
 
-    return count;
-
+    return cont;
 }
 
 
@@ -234,7 +242,8 @@ float det (float** matriz, int ordem){
             aux = -1;
         mAux = formarComplementar(matriz,i+1 , j+1,ordem);
         determinante += linha[j] * aux * det(mAux, ordem-1);
-        free(mAux);//Descarta depois de usar;
+        //Descarta depois de usar;
+        freeMatriz((void**)mAux, ordem -1);
     }
 
     free(linha);
@@ -266,7 +275,7 @@ float** matrizIcognita (float** coeficientes, float* resultados, int pos, int qt
 
 //Recebe um ponteiro de Sistema pelo parâmetro e devolve um vetor com os valores das icógnitas em ordem;
 float* resolverSistema (Sistema* sis){
-    int i, j;
+    int i;
     float determinanteC;
     float determinanteIcog;
     float** aux;
@@ -297,10 +306,13 @@ void printarSistema (Sistema* sis){
             printf("%s", a);
 
             if( j + 1 < sis -> qtdIcog)//Significa que tem mais icognitas;
-                if(sis -> matrizCoeficientes[i][j+1] < 0)
+                if(sis -> matrizCoeficientes[i][j+1] < 0){
                     printf(" ");//Deixa espaço em branco pois o coeficiente já terá um "-";
-                else
+                }
+                else{
                     printf(" +");
+                }
+            else{}
         }
         printf(" = ");
         printf("%2.f\n", sis -> linhaResultados[i]);
@@ -325,8 +337,6 @@ void printarResultado (Sistema* sis) {
     printf(".");
 
 }
-
-
 
 char* lerArquivo(FILE* arq)
 {
@@ -366,90 +376,99 @@ Lista* separarEquacoes(char* nome, Sistema* sis)
     return lis;
 }
 
+char* limparString (char* str, int qtd) {
+    int i;
+    for(i = 0; i < qtd; i++)
+        *(str+i) = VAZIO;
+    *(str + qtd) = VAZIO;
+
+    return str;
+}
+
 void extrairCoeficientes(Sistema* sis, char* nome)
 {
     sis->lisEqua = separarEquacoes(nome, sis);
+
     Lista* lis = (Lista*)malloc(sizeof(Lista));
     lis->inicio = NULL;
     lis->ult = NULL;
     lis->qtd = 0;
     lis -> equals = (int(*)(void*,void*))&equalsStr;
     lis->toString = (char*(*)(void*))&toStringStr;
-    char c;
-    int ehCo;
+
+    char c;//Caracter lido da equação
+    int ehCo;//variável para controlar se um numero é ou nao coeficiente
     char* equacao = (char*)malloc(sizeof(char)*1024);
     char* coeficiente = (char*)malloc(sizeof(char)*100);
     char* variavel = (char*)malloc(sizeof(char)*100);
     char* resultado = (char*)malloc(sizeof(char)*100);
-    char* vazio = (char*)malloc(sizeof(char)*100);
     int i;
     int n;
-    int cont = 0;
+    int cont = 0;//Contador reponsável por inserir os caracteres nas variáveis
     int j;
+    int len;
 
     sis->matrizCoeficientes = (float**)malloc(sis->lisEqua->qtd * sizeof(float*));
     for(i = 0; i < sis->lisEqua->qtd; i++)
        sis->matrizCoeficientes[i] = (float*)malloc(sis->lisEqua->qtd * sizeof(float));
 
-    *(vazio)="";
-    *(coeficiente)=*(vazio);
-    *(variavel)=*(vazio);
-    *(resultado)=*(vazio);
-    ehCo = 1; //variavel para controlar se um numero é ou nao coeficiente
+    ehCo = 1; //variável para controlar se um numero é ou nao coeficiente
 
-    for(i=0; i<sis->lisEqua->qtd; i++) //PRIMEIRO FOR PARA DESCOBRIR AS VARIAVEIS
+     //PRIMEIRO FOR PARA DESCOBRIR AS VARIAVEIS
+    for(i=0; i<sis->lisEqua->qtd; i++)
     {
         equacao = (char*)getElemento(sis->lisEqua,i);
-        int len = strlen(equacao);
-        j = 0; //variavel para controlar a coluna da Matriz dos Coeficientes
+        len = strlen(equacao);
+        j = 0; //variável para controlar a coluna da Matriz dos Coeficientes
         for(n=0;n<=len;n++)
         {
-            c = *(equacao+n);
+            c = *(equacao+n);//Caracter que está sendo lido da equação
 
+            //Quer dizer que o caracter lido
             if(c>=97 && c<=122)
             {
                 *(variavel+cont) = c;
                 cont++;
             }
-            else if (c==32 && !equalsStr(variavel, vazio))
+            //Se o caracter for um espaço, acabou o nome da variável
+            else if (c == 32 && !equalsStr(variavel, VAZIO))
             {
-                *(variavel+cont) = '\0';
-                insira(lis, variavel); //ESSE INSIRA INSERE POR CIMA DO PRIMEIRO ELEMENTO, PQ??
+                *(variavel + cont) = '\0';
+                insira(lis, variavel);
+                free(variavel);
+                variavel = (char*)malloc(sizeof(char) * 100);
+
                 printar(lis);
-                *(variavel+cont) = *(vazio+cont);
-                int l;
-                for(l=0; l<cont; l++)
-                    *(variavel+l) = *(vazio+l);
+                variavel = limparString(variavel, cont);
                 cont = 0;
             }
         }
     }
 
-
-
-    for(i=0; i<=sis->lisEqua->qtd; i++)//SEGUNDO FOR PARA EXTRAIR OS COEFICIENTES E RESULTADOS
+    //SEGUNDO FOR PARA EXTRAIR OS COEFICIENTES E RESULTADOS
+    for(i = 0; i <= sis->lisEqua->qtd; i++)
     {
         equacao = (char*)getElemento(sis->lisEqua,i);
-
+        len = strlen(equacao);
         j = 0; //variavel para controlar a coluna da Matriz dos Coeficientes
-        for(n=0;n<=strlen(equacao);n++) //for que vai caracter por caracter da lista
+        for(n = 0;n <= len; n++) //for que vai caracter por caracter da lista
         {
             c = *(equacao+n);
 
-
-                if(c>=43 && c<=57)
+                //Se o caracter for número ou sinal,
+                if(c >= 43 && c <= 57)
                 {
-                    if (equalsStr(resultado, vazio)==0 && ehCo != 1 && n==0)
+                    //Se ele for um resultado que já foi lido
+                    if (equalsStr(resultado, VAZIO) == 0 && ehCo != 1 && n==0)
                     {
                         *(resultado+cont) = '\0';
                         sis->linhaResultados[i-1] = strtof(resultado, NULL);
-                        *(resultado+cont) = *(vazio+cont);
-                        int l;
-                        for(l=0; l<cont; l++)
-                            *(resultado+l) = *(vazio+l);
+                        *(resultado+cont) = VAZIO;
+                        resultado = limparString(resultado, cont);
                         ehCo = 1;
                         cont = 0;
                     }
+
                     if(ehCo == 1)
                     {
                         *(coeficiente+cont) = c;
@@ -472,24 +491,20 @@ void extrairCoeficientes(Sistema* sis, char* nome)
                 {
                     if(ehCo==1)
                     {
-                        if(equalsStr(coeficiente, vazio)==0)
+                        if(equalsStr(coeficiente, VAZIO)==0)
                         {
                             *(coeficiente+cont) = '\0';
                             float a = strtof(coeficiente, NULL);
                             sis->matrizCoeficientes[i][j] = a;
                             j++;
-                            *(coeficiente+cont) = *(vazio+cont);
-                            int l;
-                            for(l=0; l<cont; l++)
-                                *(coeficiente+l) = *(vazio+l);
+                            *(coeficiente+cont) = VAZIO;
+                             resultado = limparString(coeficiente, cont);
                             cont = 0;
                         }
                         *(variavel+cont) = '\0';
                         insira(lis, variavel);
-                        *(variavel+cont) = *(vazio+cont);
-                        int l;
-                        for(l=0; l<cont; l++)
-                            *(variavel+l) = *(vazio+l);
+                        *(variavel+cont) = VAZIO;
+                        resultado = limparString(variavel, cont);
                         cont = 0;
                     }
 
@@ -502,8 +517,10 @@ void extrairCoeficientes(Sistema* sis, char* nome)
         printar(lis);
 
 }
+
 int main()
 {
+    /*
 	FILE* arq;
     Sistema* sis = (Sistema*)malloc(sizeof(Sistema));
     sis->qtdIcog = 0;
@@ -516,8 +533,8 @@ int main()
    char nome [1000];
 
 
-    /*printf("Digite o nome do arquivo: ");
-    scanf("%s", nome);*/
+    //printf("Digite o nome do arquivo: ");
+    //scanf("%s", nome);
     nome[0] = 'a';
     nome[1] = '.';
     nome[2] = 't';
@@ -526,7 +543,20 @@ int main()
 
     nome[5] = '\0';
     extrairCoeficientes(sis, nome);
+    */
 
+    Lista a;
+    a.inicio = NULL;
+    a.ult = NULL;
+    a.equals = (int(*)(void*, void*))&equalsStr;
+    a.qtd = 0;
+    a.toString = (char*(*)(void*))&toStringStr;
+
+    char* aux = (char*)malloc(sizeof(char) * 255);
+    strcpy(aux, "Pei");
+    insira(&a, aux);
+
+    printar(&a);
 
     return  0;
 }
