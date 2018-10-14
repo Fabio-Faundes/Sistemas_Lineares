@@ -286,7 +286,8 @@ float* resolverSistema (Sistema* sis){
         aux = matrizIcognita(sis -> matrizCoeficientes, sis -> linhaResultados, i+1, sis -> qtdIcog);
         determinanteIcog = det(aux, sis->qtdIcog);
         free(aux);//Lembrar de descartar o que não for mais usada;
-        ret[i] = determinanteC/determinanteIcog;
+        ret[i] = determinanteIcog/determinanteC;
+
     }
 
     return ret;
@@ -308,16 +309,16 @@ void printarResultado (Sistema* sis) {
     Lista* lis = sis -> lisIcog;
     float* resolucao = resolverSistema(sis);
 
-    printf("\nSolução: ");
+    printf("\n\nSolucao: ");
     for(i = 0; i < sis -> qtdIcog; i++){
         char * a = (char*)getElemento(lis, i);
-        printf("%s = %2.f", a, resolucao[i]);
+        printf("%s = %.3f", a, resolucao[i]);
 
         if(i + 1 < sis -> qtdIcog)
             printf(", ");
     }
 
-    printf(".");
+    printf(".\n");
 
 }
 
@@ -559,21 +560,20 @@ int main()
     sis.qtdIcog = 0;
 
 
-   char nome [1000];
+   char* nome = (char*)malloc(sizeof(char)*100);
 
 
-    //printf("Digite o nome do arquivo: ");
-    //scanf("%s", nome);
-    nome[0] = 'a';
-    nome[1] = '.';
-    nome[2] = 't';
-    nome[3] = 'x';
-    nome[4] = 't';
+    printf("Digite o nome do arquivo: ");
+    scanf("%s", nome);
 
-    nome[5] = '\0';
+    nome[strlen(nome)] = '\0';
+
+
     extrairCoeficientes(&sis, nome);
     printarSistema(&sis);
     printarResultado(&sis);
+
+
 
 /*
     Lista a;
