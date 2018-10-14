@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1539451754 source:c:\users\nicolas\desktop\sistemas_lineares\sistemas lineares\main.c
+1539536484 source:c:\users\nicolas\desktop\sistemas_lineares\sistemas lineares\main.c
 	<stdlib.h>
 	<stdio.h>
 	<string.h>
