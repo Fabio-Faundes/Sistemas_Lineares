@@ -320,6 +320,9 @@ float* resolverSistema (Sistema* sis){
     float* ret = (float*)malloc(sis -> qtdIcog * sizeof(float));
 
     determinanteC = det(sis -> matrizCoeficientes, sis -> qtdIcog);
+    if(determinanteC == 0)
+        return NULL;
+
     for(i = 0; i < sis -> qtdIcog; i++){
         aux = matrizIcognita(sis -> matrizCoeficientes, sis -> linhaResultados, i+1, sis -> qtdIcog);
         determinanteIcog = det(aux, sis->qtdIcog);
@@ -345,6 +348,11 @@ void printarResultado (Sistema* sis) {
     int i;
     Lista* lis = sis -> lisIcog;
     float* resolucao = resolverSistema(sis);
+
+    if(resolucao == NULL){
+        printf("Sistema sem solucao definida, eh SPI ou SI");
+        return;
+    }
 
     printf("\nSolucao: ");
     for(i = 0; i < sis -> qtdIcog; i++){
@@ -540,9 +548,9 @@ void extrairCoeficientes(Sistema* sis, char* nome){
 }
 
 void instrucoes () {
-    printf("========================================= INSTRUCOES ========================================================\n");
-    printf("Para solucionar um sistem de equacoes lineares usando o programa, voce precisa usar um arquivo de texto. \n");
-    printf("Escreva o sistema que deseje solucionar, colocando na primeira linha do arquivo o numero de \nicognitas/equacoes nele.\n");
+    printf("============================== INSTRUCOES ================================\n");
+    printf("Para solucionar um sistem de equacoes lineares usando o programa, voce precisa \nusar um arquivo de texto. \n");
+    printf("Escreva o sistema que deseje solucionar, colocando na primeira linha do \narquivo o numero de icognitas/equacoes nele.\n");
     printf("Atencao! O sistema nao podera ser solucionado caso seja SPI ou SI. \n");
     printf("Ao digitar o nome do arquivo, escreva seu endereco completo e coloque \".txt\" no final\n");
 }
