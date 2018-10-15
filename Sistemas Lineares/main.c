@@ -45,6 +45,44 @@ void freeMatriz (void** mat, int tamanho) {
     free(mat);
 }
 
+void freeNo (No* no) {
+    if(no -> prox == NULL){
+        free(no);
+    }
+    else{
+        No* aux = no -> prox;
+        freeNo(aux);
+    }
+}
+
+void freeLista (Lista* lis){
+    //freeNo(lis -> inicio);
+    //freeNo(lis -> ult);
+    free(lis -> inicio);
+    free(lis -> ult);
+    free(lis);
+}
+
+void freeSistema(Sistema* sis) {
+    freeLista(sis -> lisIcog);
+    freeLista(sis -> lisEqua);
+    freeMatriz((void**)sis -> matrizCoeficientes, sis -> qtdIcog);
+    free(sis -> linhaResultados);
+    free(sis);
+}
+
+//inicia uma lista de string
+Lista* initListaStr (){
+    Lista* lis = (Lista*)malloc(sizeof(Lista));
+    lis->inicio = NULL;
+    lis->ult = NULL;
+    lis->qtd = 0;
+    lis -> equals = (int(*)(void*,void*))&equalsStr;
+    lis->toString = (char*(*)(void*))&toStringStr;
+
+    return lis;
+}
+
 //Checa se já existe algum nó na lista com determinada informacao;
 int jaTem (Lista* lis, void* rInfo) {
     No* aux = lis -> inicio;
@@ -285,9 +323,8 @@ float* resolverSistema (Sistema* sis){
     for(i = 0; i < sis -> qtdIcog; i++){
         aux = matrizIcognita(sis -> matrizCoeficientes, sis -> linhaResultados, i+1, sis -> qtdIcog);
         determinanteIcog = det(aux, sis->qtdIcog);
-        free(aux);//Lembrar de descartar o que não for mais usada;
+        freeMatriz((void**)aux, sis -> qtdIcog);//Lembrar de descartar o que não for mais usada;
         ret[i] = determinanteIcog/determinanteC;
-
     }
 
     return ret;
@@ -309,7 +346,7 @@ void printarResultado (Sistema* sis) {
     Lista* lis = sis -> lisIcog;
     float* resolucao = resolverSistema(sis);
 
-    printf("\n\nSolucao: ");
+    printf("\nSolucao: ");
     for(i = 0; i < sis -> qtdIcog; i++){
         char * a = (char*)getElemento(lis, i);
         printf("%s = %.3f", a, resolucao[i]);
@@ -322,8 +359,7 @@ void printarResultado (Sistema* sis) {
 
 }
 
-char* lerArquivo(FILE* arq)
-{
+char* lerArquivo(FILE* arq){
     fseek(arq, 0, SEEK_END);
     long int buffer_size = ftell(arq);
     fseek(arq, 0, SEEK_SET);
@@ -337,8 +373,7 @@ char* lerArquivo(FILE* arq)
     return concat;
 }
 
-Lista* separarEquacoes(char* nome, Sistema* sis)
-{
+Lista* separarEquacoes(char* nome, Sistema* sis){
     FILE* arq = fopen(nome, "r");
     char* texto = lerArquivo(arq);
 
@@ -362,77 +397,41 @@ Lista* separarEquacoes(char* nome, Sistema* sis)
     return lis;
 }
 
-char* limparString (char* str, int qtd) {
-    int i;
-    for(i = 0; i < qtd; i++)
-        *(str+i) = "";
-    *(str + qtd) = "";
-
-    return str;
-}
-
-void extrairCoeficientes(Sistema* sis, char* nome)
-{
+void extrairCoeficientes(Sistema* sis, char* nome){
+    //Separando equacoes para facilitar o processo;
     sis->lisEqua = separarEquacoes(nome, sis);
     sis -> qtdIcog = sis -> lisEqua -> qtd;
 
-    Lista* lis = (Lista*)malloc(sizeof(Lista)); //INICIALIZACAO DA LISTA DAS VARIAVEIS
-    lis->inicio = NULL;
-    lis->ult = NULL;
-    lis->qtd = 0;
-    lis -> equals = (int(*)(void*,void*))&equalsStr;
-    lis->toString = (char*(*)(void*))&toStringStr;
+    //INICIALIZACAO DA LISTA DAS VARIAVEIS
+    Lista* lis = initListaStr();
 
-    Lista* lisR = (Lista*)malloc(sizeof(Lista)); //INICIALIZACAO DA LISTA DOS RESULTADOS
-    lisR->inicio = NULL;
-    lisR->ult = NULL;
-    lisR->qtd = 0;
-    lisR -> equals = (int(*)(void*,void*))&equalsStr;
-    lisR->toString = (char*(*)(void*))&toStringStr;
+    int i, j, n,
+        inseriu = 0, // variavel boolean para saber foi inserido um item em uma lista
+        posVariavel = 0, //variavel para contNolar quantas variaveis ja foram inseridas na lista
+        cont = 0, //Contador reponsável por inserir os caracteres nas variáveis
+        contN = 0, //Contador responsavel por inserir caracteres nos coeficientes
+        ehCo = 1;//variável para contNolar se um numero é ou nao coeficiente
 
-    char* VAZIO = (char*)malloc(sizeof(char)*10);
-    strcpy(VAZIO, "");
-
-    int i;
-    int j;
-    int n;
-    int inseriu = 0; // variavel boolean para saber foi inserido um item em uma lista
-    int posVariavel = 0; //variavel para contNolar quantas variaveis ja foram inseridas na lista
-    int cont = 0;//Contador reponsável por inserir os caracteres nas variáveis
-    int contN = 0;//Contador responsavel por inserir caracteres nos coeficientes
     char c;//Caracter lido da equação
-    int ehCo = 1;//variável para contNolar se um numero é ou nao coeficiente
-    char* equacao = (char*)malloc(sizeof(char)*1024);
+    char* equacao = (char*)malloc(sizeof(char)*1024); //variavel para guardar uma das equacoes da lista de cada vez;
+    char* resultado = (char*)malloc(sizeof(char)*100); //variavel para guardar o valor de um resultado;
+    char* coeficiente = (char*)malloc(sizeof(char)*100); //variavel para guardar o valor de um coeficiente;
+    char* variavelCmp = (char*)malloc(sizeof(char)*100); //variavel para guardar temporariamente o nome de uma icognita;
 
+    //Vetor de strings utilizado para formar a lista de icognitas do sitema;
     char** variavel = (char**)malloc(sizeof(char*) * sis -> qtdIcog);
     for(i = 0; i < sis -> qtdIcog; i++){
         variavel[i] = (char*)malloc(sizeof(char)*100);
         variavel[i][0] = '\0';
     }
 
-    /*char** resultado = (char**)malloc(sizeof(char*)* sis -> qtdIcog);
-    for(i = 0; i < sis -> qtdIcog; i++){
-        resultado[i] = (char*)malloc(sizeof(char)* 100);
-        resultado[i] = '\0';
-    }*/
-
-    /*char** coeficiente = (char*)malloc(sizeof(char*)*sis->qtdIcog);
-    for(i=0; i < sis -> qtdIcog; i++){
-        coeficiente[i] = (char*)malloc(sizeof(char)*100);
-        coeficiente[i] = '\0';
-    }*/
-
-    char* resultado = (char*)malloc(sizeof(char)*100);
-    char* coeficiente = (char*)malloc(sizeof(char)*100);
-
-    char* variavelCmp = (char*)malloc(sizeof(char)); //variavel para guardar temporariamente uma variavel
-
+    //Inicializacao da matriz de coeficientes do sistema que será montado;
     sis->matrizCoeficientes = (float**)malloc(sis->lisEqua->qtd * sizeof(float*));
     for(i = 0; i < sis->lisEqua->qtd; i++)
        sis->matrizCoeficientes[i] = (float*)malloc(sis->lisEqua->qtd * sizeof(float));
 
 
-     //PRIMEIRO FOR PARA DESCOBRIR AS VARIAVEIS
+     //PRIMEIRO FOR PARA DESCOBRIR O NOME DAS ICOGNITAS
     for(i = 0; i < sis -> lisEqua -> qtd; i++)
     {
         //Já achou todas as icgnitas
@@ -462,10 +461,9 @@ void extrairCoeficientes(Sistema* sis, char* nome)
     }
 
     sis -> lisIcog = lis;
-    printar(sis -> lisIcog);
     cont = 0;
 
-    //Inicializando os componentes qiue serao usados no sistema
+    //Inicializando os componentes que serao usados no sistema
     sis -> linhaResultados = (float*)malloc(sizeof(float)*sis -> qtdIcog);
     sis -> matrizCoeficientes = (float**)malloc(sizeof(float*)*sis -> qtdIcog);
     for(i = 0; i < sis -> qtdIcog; i++)
@@ -532,37 +530,31 @@ void extrairCoeficientes(Sistema* sis, char* nome)
                         variavelCmp = (char*)malloc(sizeof(char)*100);
                     }
                 }
-
             }
-
         }
 
-        printf("\n");
-        for(i = 0; i < sis -> qtdIcog; i++){
-            for(j = 0; j < sis -> qtdIcog; j++)
-                printf("%.2f ", sis -> matrizCoeficientes[i][j]);
-            printf("\n");
-        }
-
-        printf("\n");
-        for(i = 0; i < sis -> qtdIcog; i++)
-            printf("%.2f ", sis -> linhaResultados[i]);
+        free(equacao);
+        free(coeficiente);
+        free(resultado);
+        free(variavelCmp);
 }
 
-int main()
-{
+void instrucoes () {
+    printf("========================================= INSTRUCOES ========================================================\n");
+    printf("Para solucionar um sistem de equacoes lineares usando o programa, voce precisa usar um arquivo de texto. \n");
+    printf("Escreva o sistema que deseje solucionar, colocando na primeira linha do arquivo o numero de \nicognitas/equacoes nele.\n");
+    printf("Atencao! O sistema nao podera ser solucionado caso seja SPI ou SI. \n");
+    printf("Ao digitar o nome do arquivo, escreva seu endereco completo e coloque \".txt\" no final\n");
+}
 
-	FILE* arq;
+void solucionador () {
     Sistema sis;
     sis.lisEqua = NULL;
     sis.lisIcog = NULL;
     sis.matrizCoeficientes = NULL;
     sis.qtdIcog = 0;
 
-
-   char* nome = (char*)malloc(sizeof(char)*100);
-
-
+    char* nome = (char*)malloc(sizeof(char)*100);
     printf("Digite o nome do arquivo: ");
     scanf("%s", nome);
 
@@ -570,26 +562,45 @@ int main()
 
 
     extrairCoeficientes(&sis, nome);
+    printf("Sistema: ");
     printarSistema(&sis);
     printarResultado(&sis);
 
+    freeSistema(&sis);
+}
 
+void creditos () {
+    printf("\n------------- CREDITOS --------------------\n");
+    printf("Autores: Fabio Faundes e Nicholas Patapoff.\n");
+    printf("Apoio: Nenhum.\n");
+    printf("Agradecimentos: Professor André Carvalho - Cotuca.");
+    printf("\n\n\t Viva PD17, PD TERRO\n");
+}
 
-/*
-    Lista a;
-    a.inicio = NULL;
-    a.ult = NULL;
-    a.equals = (int(*)(void*, void*))&equalsStr;
-    a.qtd = 0;
-    a.toString = (char*(*)(void*))&toStringStr;
+int main()
+{
+    int acabou = 0;
+    int escolha =  -1;
 
-    char* aux = (char*)malloc(sizeof(char) * 255);
-    strcpy(aux, "Pei");
-    insira(&a, aux);
+    printf("\n========= Bem vindo ao solucionador de Sistemas Lineares!! ============\n\n");
+    do{
+        printf("O que voce deseja fazer?\n");
+        printf("1 - Instrucoes;\n");
+        printf("2 - Solucionar um sistema;\n");
+        printf("3 - Creditos;\n");
+        scanf("%d", &escolha);
 
-    printar(&a);*/
+        switch (escolha){
+            case 1: system("cls"); instrucoes(); break;
+            case 2: system("cls"); solucionador(); break;
+            case 3: system("cls"); creditos(); break;
+            default: break;
+        }
+
+        printf("\nSair do programa?(0/1)\n");
+        scanf("%d", &acabou);
+        system("cls");
+    }while(!acabou);
 
     return  0;
 }
-
-
